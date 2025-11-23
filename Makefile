@@ -10,7 +10,7 @@ test:
 	go test -v ./tests/
 
 integration-test:
-	go test -v ./tests/ -run Integration
+	go test -v ./tests/integration_test.go ./tests/edge_cases_test.go
 
 load-test:
 	go test -v ./tests/ -run TestConcurrent

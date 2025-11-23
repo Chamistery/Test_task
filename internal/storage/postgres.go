@@ -9,7 +9,7 @@ import (
 
 	"github.com/Chamistery/Test_task/internal/models"
 
-	_ "github.com/lib/pq"
+	"github.com/lib/pq"
 )
 
 type DBConfig struct {
@@ -407,12 +407,12 @@ func (s *PostgresStorage) ReassignReviewer(prID string, oldUserID string, newUse
 
 func (s *PostgresStorage) GetActiveCandidates(teamName string, excludeIDs []string) ([]string, error) {
 	query := `
-		SELECT user_id FROM users 
+		SELECT user_id FROM users
 		WHERE team_name = $1 AND is_active = true AND user_id != ALL($2)
 		ORDER BY user_id
 	`
 
-	rows, err := s.db.Query(query, teamName, excludeIDs)
+	rows, err := s.db.Query(query, teamName, pq.Array(excludeIDs))
 	if err != nil {
 		return nil, err
 	}
@@ -536,7 +536,7 @@ func (s *PostgresStorage) BulkDeactivateTeamMembers(teamName string) (int, int, 
 		return 0, 0, nil
 	}
 
-	_, err = tx.Exec(`UPDATE users SET is_active = false WHERE user_id = ANY($1)`, userIDs)
+	_, err = tx.Exec(`UPDATE users SET is_active = false WHERE user_id = ANY($1)`, pq.Array(userIDs))
 	if err != nil {
 		return 0, 0, err
 	}
@@ -546,7 +546,7 @@ func (s *PostgresStorage) BulkDeactivateTeamMembers(teamName string) (int, int, 
 		FROM pull_requests pr
 		JOIN pr_reviewers prr ON pr.pull_request_id = prr.pull_request_id
 		WHERE pr.status = 'OPEN' AND prr.user_id = ANY($1)
-	`, userIDs)
+	`, pq.Array(userIDs))
 	if err != nil {
 		return 0, 0, err
 	}
@@ -657,12 +657,12 @@ func (s *PostgresStorage) BulkDeactivateTeamMembers(teamName string) (int, int, 
 
 func (s *PostgresStorage) getActiveCandidatesInTx(tx *sql.Tx, teamName string, excludeIDs []string) ([]string, error) {
 	query := `
-		SELECT user_id FROM users 
+		SELECT user_id FROM users
 		WHERE team_name = $1 AND is_active = true AND user_id != ALL($2)
 		ORDER BY user_id
 	`
 
-	rows, err := tx.Query(query, teamName, excludeIDs)
+	rows, err := tx.Query(query, teamName, pq.Array(excludeIDs))
 	if err != nil {
 		return nil, err
 	}

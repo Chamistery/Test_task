@@ -20,7 +20,7 @@ func setupTestServer(t *testing.T) (*httptest.Server, *handlers.Handlers, func()
 		Port:     "5432",
 		User:     "postgres",
 		Password: "postgres",
-		DBName:   "reviewer_service_test",
+		DBName:   "reviewer_service",
 	}
 
 	store, err := storage.NewPostgresStorage(dbConfig)
